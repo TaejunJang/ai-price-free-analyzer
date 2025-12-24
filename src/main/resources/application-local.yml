@@ -18,5 +18,4 @@ spring:
         collection-name: products
         use-tls: false
         initialize-schema: true
-vaadin:
-  whitelisted-packages: com.zoontopia.priceanalyzer
+
