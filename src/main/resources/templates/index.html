@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Price Analyzer Chat</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #b2c7d9;
+        }
+
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            background-color: #aabfd0;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .header-title {
+            font-weight: bold;
+            font-size: 16px;
+            color: #000;
+        }
+
+        .reset-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            color: #333;
+        }
+
+        .reset-btn:hover {
+            color: #000;
+        }
+
+        /* Chat Area */
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .chat-bubble {
+            max-width: 70%;
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-size: 14px;
+            line-height: 1.5;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            white-space: pre-wrap;
+            position: relative;
+        }
+
+        .user-message {
+            background-color: #ffe01e;
+            color: #000;
+            align-self: flex-end;
+            border-top-right-radius: 2px;
+        }
+
+        .ai-message {
+            background-color: #ffffff;
+            color: #000;
+            align-self: flex-start;
+            border-top-left-radius: 2px;
+        }
+
+        .system-message {
+            background-color: #ffffff;
+            color: #666;
+            align-self: flex-start;
+            border-top-left-radius: 2px;
+            font-style: italic;
+        }
+
+        .chat-chart {
+            background-color: #ffffff;
+            padding: 15px;
+            border-radius: 10px;
+            align-self: flex-start;
+            margin-bottom: 10px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .chat-chart canvas {
+            width: 100% !important;
+            height: auto !important;
+        }
+
+        /* Input Footer */
+        .input-footer {
+            background-color: #ffffff;
+            padding: 15px;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .input-field {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .product-input {
+            flex: 2;
+        }
+
+        .price-input {
+            flex: 1;
+        }
+
+        .send-btn {
+            padding: 10px 20px;
+            background-color: #006af5; /* Vaadin Lumo Primary approx */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .send-btn:hover {
+            background-color: #0056c7;
+        }
+        
+        .loading {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        /* Loading Overlay */
+        #loadingOverlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 1000;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="loadingOverlay">
+    <div class="spinner"></div>
+    <div>분석 중...</div>
+</div>
+
+<div class="chat-container">
+    <div class="header">
+        <div class="header-title">AI Price Analyzer</div>
+        <button class="reset-btn" onclick="resetData()" title="Reset Data">&#x21bb;</button>
+    </div>
+
+    <div class="chat-messages" id="chatMessages">
+        <div class="chat-bubble system-message">
+            안녕하세요! AI 가격 분석 봇입니다.<br>
+            현재 다음과 같은 상품군에 대해 분석이 가능합니다.<br><br>
+            <b>1. 가전/디지털:</b> 애플 제품, 청소기, 음향/영상, PC주변기기 등<br>
+            <b>2. 신선식품:</b> 육류/수산, 과일/채소, 가공식품, 반찬 등<br>
+            <b>3. 뷰티/화장품:</b> 스킨케어, 메이크업, 클렌징 등<br>
+            <b>4. 패션/의류:</b> 유명 브랜드 신발 및 의류 등<br>
+            <b>5. 생활용품:</b> 세제, 위생용품, 가구/침구, 주방용품 등<br><br>
+            분석할 <b>상품명</b>과 <b>가격</b>을 입력해주세요!
+        </div>
+    </div>
+
+    <div class="input-footer">
+        <input type="text" id="productName" class="input-field product-input" placeholder="상품명 (예: 게이밍 노트북)">
+        <input type="number" id="price" class="input-field price-input" placeholder="가격">
+        <button class="send-btn" onclick="sendMessage()">전송</button>
+    </div>
+</div>
+
+<script>
+    const chatMessages = document.getElementById('chatMessages');
+    const productNameInput = document.getElementById('productName');
+    const priceInput = document.getElementById('price');
+    const sendBtn = document.querySelector('.send-btn');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+
+    function scrollToBottom() {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function addMessage(text, type) {
+        const bubble = document.createElement('div');
+        bubble.className = `chat-bubble ${type}`;
+        bubble.innerText = text;
+        chatMessages.appendChild(bubble);
+        scrollToBottom();
+    }
+
+    function addChart(comparisonData) {
+        if (!comparisonData || comparisonData.length === 0) return;
+        
+        const container = document.createElement('div');
+        container.className = 'chat-chart';
+        
+        const canvas = document.createElement('canvas');
+        container.appendChild(canvas);
+        chatMessages.appendChild(container);
+        
+        const labels = comparisonData.map(item => item.name.length > 10 ? item.name.substring(0, 10) + '...' : item.name);
+        const prices = comparisonData.map(item => item.price);
+
+        new Chart(canvas, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '가격 비교 (원)',
+                    data: prices,
+                    backgroundColor: prices.map((_, i) => i === 0 ? 'rgba(255, 206, 86, 0.8)' : 'rgba(54, 162, 235, 0.5)'),
+                    borderColor: prices.map((_, i) => i === 0 ? 'rgba(255, 206, 86, 1)' : 'rgba(54, 162, 235, 1)'),
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.raw.toLocaleString() + '원';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString(); // Remove currency symbols
+                            }
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            autoSkip: false,
+                            maxRotation: 45,
+                            minRotation: 45
+                        }
+                    }
+                }
+            }
+        });
+
+        scrollToBottom();
+    }
+
+    async function sendMessage() {
+        const productName = productNameInput.value.trim();
+        const price = priceInput.value;
+
+        if (!productName || !price) {
+            alert("상품명과 가격을 모두 입력해주세요.");
+            return;
+        }
+
+        // Add user message
+        addMessage(`상품명: ${productName}\n가격: ${price}\n분석 부탁해!`, 'user-message');
+        
+        // Clear inputs
+        productNameInput.value = '';
+        priceInput.value = '';
+
+        // UI Loading state
+        sendBtn.classList.add('loading');
+        sendBtn.innerText = '...';
+        loadingOverlay.style.display = 'flex';
+
+        try {
+            const response = await fetch('/api/analyze', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ productName, price: parseFloat(price) })
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const data = await response.json();
+            
+            // Add AI response
+            addMessage(data.analysis, 'ai-message');
+            
+            // Add Chart
+            if (data.comparisonData) {
+                addChart(data.comparisonData);
+            } else {
+                // Fallback to old image if data not present
+                const imgContainer = document.createElement('div');
+                imgContainer.className = 'chat-chart';
+                const img = document.createElement('img');
+                img.src = 'data:image/png;base64,' + data.chartImageBase64;
+                img.style.maxWidth = '100%';
+                imgContainer.appendChild(img);
+                chatMessages.appendChild(imgContainer);
+            }
+
+        } catch (error) {
+            console.error('Error:', error);
+            addMessage("죄송합니다. 분석 중 오류가 발생했습니다.", 'ai-message');
+        } finally {
+            sendBtn.classList.remove('loading');
+            sendBtn.innerText = '전송';
+            loadingOverlay.style.display = 'none';
+        }
+    }
+
+    async function resetData() {
+        if(!confirm("데이터를 초기화하시겠습니까?")) return;
+
+        try {
+            const response = await fetch('/api/reset', { method: 'POST' });
+            if (response.ok) {
+                addMessage("데이터가 초기화되었습니다.", 'system-message');
+            } else {
+                alert("초기화 실패");
+            }
+        } catch (e) {
+            console.error(e);
+            alert("초기화 중 오류 발생");
+        }
+    }
+
+    // Enter key support
+    priceInput.addEventListener("keypress", function(event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            sendMessage();
+        }
+    });
+</script>
+
+</body>
+</html>

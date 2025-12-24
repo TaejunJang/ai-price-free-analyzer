@@ -1,0 +1,17 @@
+{
+  "frontendFolder": "D:/AI_PROJECT/price-analyzer/./src/main/frontend",
+  "themeFolder": "themes",
+  "themeResourceFolder": "D:/AI_PROJECT/price-analyzer/./src/main/frontend/generated/jar-resources",
+  "staticOutput": "D:/AI_PROJECT/price-analyzer/target/classes/META-INF/VAADIN/webapp/VAADIN/static",
+  "generatedFolder": "generated",
+  "statsOutput": "D:\\AI_PROJECT\\price-analyzer\\target\\classes\\META-INF\\VAADIN\\config",
+  "frontendBundleOutput": "D:\\AI_PROJECT\\price-analyzer\\target\\classes\\META-INF\\VAADIN\\webapp",
+  "devBundleOutput": "D:/AI_PROJECT/price-analyzer/target/dev-bundle/webapp",
+  "devBundleStatsOutput": "D:/AI_PROJECT/price-analyzer/target/dev-bundle/config",
+  "jarResourcesFolder": "D:/AI_PROJECT/price-analyzer/./src/main/frontend/generated/jar-resources",
+  "themeName": "",
+  "clientServiceWorkerSource": "D:\\AI_PROJECT\\price-analyzer\\target\\sw.ts",
+  "pwaEnabled": false,
+  "offlineEnabled": false,
+  "offlinePath": "'offline.html'"
+}

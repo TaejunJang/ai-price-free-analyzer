@@ -1,0 +1,21 @@
+server:
+  port: 40000
+spring:
+  application:
+    name: price-analyzer
+  ai:
+    ollama:
+      base-url: http://localhost:11434 # Point to local or dev Ollama server
+      chat:
+        model: exaone3.5:2.4b
+      embedding:
+        model: bge-m3
+    vectorstore:
+      qdrant:
+        host: localhost # Point to local or dev Qdrant server
+        port: 6333
+        allow-empty-collection: true # May be true for dev environments
+        collection-name: products
+        use-tls: false
+vaadin:
+  whitelisted-packages: com.zoontopia.priceanalyzer
