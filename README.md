@@ -2,7 +2,16 @@
 
 이 프로젝트는 Spring AI, Ollama(LLM), 그리고 Qdrant(Vector Database)를 활용하여 사용자가 제안한 제품 가격이 시장에서 경쟁력이 있는지 분석해주는 RAG(Retrieval-Augmented Generation) 기반의 애플리케이션입니다.
 
-## 1. 프로젝트 구조
+## 1. 개발 환경 및 기술 스택
+
+- **Java**: 25
+- **Spring Boot**: 3.5.10-SNAPSHOT
+- **Gradle**: 9.2.1
+- **Spring AI**: 1.1.2
+- **Database**: Qdrant (Vector DB)
+- **LLM/Embedding**: Ollama (exaone3.5:2.4b, bge-m3)
+
+## 2. 프로젝트 구조
 
 ```text
 price-analyzer/
@@ -42,7 +51,7 @@ price-analyzer/
 
 ## 3. 로컬 실행을 위한 사전 준비
 
-이 프로젝트를 로컬에서 실행하려면 **Java 17**, **Ollama**, **Qdrant**가 설치 및 실행 중이어야 합니다.
+이 프로젝트를 로컬에서 실행하려면 **Java 25**, **Ollama**, **Qdrant**가 설치 및 실행 중이어야 합니다.
 
 ### 공통 필수 사항 (Ollama 모델 다운로드)
 Ollama가 설치된 후 터미널(또는 CMD)에서 아래 명령어를 실행하여 모델을 다운로드해야 합니다.
@@ -58,8 +67,8 @@ ollama pull bge-m3
 
 ### [Windows 버전]
 
-1.  **JDK 17 설치**:
-    - [Oracle JDK 17](https://www.oracle.com/java/technologies/downloads/#java17) 또는 [Adoptium(Temurin)](https://adoptium.net/temurin/releases/?version=17)에서 설치 프로그램을 다운로드하여 실행합니다.
+1.  **JDK 25 설치**:
+    - [Oracle JDK](https://www.oracle.com/java/technologies/downloads/) 또는 [Adoptium(Temurin)](https://adoptium.net/temurin/releases/)에서 JDK 25 설치 프로그램을 다운로드하여 실행합니다.
     - 환경 변수(`JAVA_HOME`)가 설정되어 있는지 확인합니다 (`java -version`).
 2.  **Ollama 설치**:
     - [Ollama 공식 홈페이지](https://ollama.com/download/windows)에서 Windows용 설치 파일을 다운로드하여 설치합니다.
@@ -69,15 +78,16 @@ ollama pull bge-m3
       ```powershell
       docker run -d -p 6333:6333 -p 6334:6334 qdrant/qdrant
       ```
+    - **Qdrant Web UI(대시보드)**: 브라우저에서 `http://localhost:6333/dashboard` 접속하여 데이터 적재 상태를 확인할 수 있습니다.
 
 ### [macOS 버전]
 
-1.  **JDK 17 설치**:
+1.  **JDK 25 설치**:
     - Homebrew를 사용하여 설치하는 것을 권장합니다:
       ```bash
-      brew install openjdk@17
+      brew install openjdk@25
       # 심볼릭 링크 설정 (필요한 경우)
-      sudo ln -sfn /usr/local/opt/openjdk@17/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-17.jdk
+      sudo ln -sfn /usr/local/opt/openjdk@25/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-25.jdk
       ```
 2.  **Ollama 설치**:
     - [Ollama 공식 홈페이지](https://ollama.com/download/mac)에서 Mac용 앱을 다운로드하여 설치합니다.
@@ -86,6 +96,7 @@ ollama pull bge-m3
       ```bash
       docker run -d -p 6333:6333 -p 6334:6334 qdrant/qdrant
       ```
+    - **Qdrant Web UI(대시보드)**: 브라우저에서 `http://localhost:6333/dashboard` 접속하여 데이터 적재 상태를 확인할 수 있습니다.
     - 또는 Homebrew를 통해 직접 설치할 수도 있습니다 (Docker 권장).
 
 ---
